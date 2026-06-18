@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use DB;
+use Cache;
 use App\Models\Kyc;
 use App\Models\Plan;
 use App\Models\User;
@@ -18,6 +19,8 @@ use App\Models\Withdrawal;
 use App\Models\Debitprofit;
 use App\Models\verifyToken;
 use App\Models\Transaction;
+use GuzzleHttp\Exception\ClientException;
+use GuzzleHttp\Exception\RequestException;
 use Illuminate\Http\Request;
 use App\Mail\VerificationEmail;
 use Illuminate\Support\Facades\Auth;
@@ -2022,15 +2025,28 @@ public function makeWithdrawal(Request $request)
         
         
         
-                   // Fetch Bitcoin price from CoinGecko API
+                   // Fetch Bitcoin price from CoinGecko API with caching
     $price = 0;
     try {
-        $client = new Client();
-        $response = $client->get('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd');
-        $data = json_decode($response->getBody(), true);
-        $price = $data['bitcoin']['usd'] ?? 0;
-    } catch (RequestException $e) {
-        \Log::error('Failed to fetch Bitcoin price: ' . $e->getMessage());
+        // Try to get price from cache first (cache for 10 minutes)
+        $price = Cache::remember('bitcoin_price_usd', 600, function () {
+            $client = new Client();
+            try {
+                $response = $client->get('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd');
+                $data = json_decode($response->getBody(), true);
+                return $data['bitcoin']['usd'] ?? 0;
+            } catch (ClientException $e) {
+                \Log::error('CoinGecko API Error: ' . $e->getResponse()->getStatusCode() . ' - ' . $e->getMessage());
+                // Return cached value if available, or 0
+                return Cache::get('bitcoin_price_usd', 0);
+            } catch (RequestException $e) {
+                \Log::error('Failed to fetch Bitcoin price: ' . $e->getMessage());
+                return Cache::get('bitcoin_price_usd', 0);
+            }
+        });
+    } catch (\Exception $e) {
+        \Log::error('Bitcoin price fetch exception: ' . $e->getMessage());
+        $price = Cache::get('bitcoin_price_usd', 0);
     }
  // Retrieve user financial data
     $userId = Auth::id();
