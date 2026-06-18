@@ -362,7 +362,7 @@
                             <!-- this is the logo section  -->
                             <div class="col-md-3 col-sm-12">
                                 <a class="navbar-brand" href="/">
-                                    <img src="images/logo.png" class="brand">
+                                    <img src="{{ asset('logo.png') }}" class="brand">
                                 </a>
                                 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                                 <img src="images/icon/hamburger-blk.png">
