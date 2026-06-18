@@ -378,7 +378,7 @@
             <a href="{{url('/home')}}" class="logo-link nk-sidebar-logo">
 
 
-              <img class="" style="width:192px; height:62px;" src="images/logo.png" />
+              <img class="" style="width:192px; height:62px;" src="logo.png" />
 
 
 
@@ -713,7 +713,7 @@
               <div class="nk-header-brand d-xl-none">
                 <a href="{{url('/home')}}" class="logo-link">
 
-                  <img class="" style="width:192px; height:62px;" src="images/logo.png" />
+                  <img class="" style="width:192px; height:62px;" src="logo.png" />
 
 
                 </a>
